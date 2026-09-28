@@ -1,0 +1,128 @@
+// ============================================================================
+//  全局样式（在 main.ts 中于 Element Plus 之后引入）
+// ============================================================================
+
+// ── 基础重置 ──
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: $font-family-base;
+  font-size: 14px;
+  color: $gray-900;
+  background-color: $gray-100;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#app {
+  height: 100%;
+}
+
+// ── 滚动条（统一风格）──
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: $gray-300;
+  border-radius: 4px;
+
+  &:hover {
+    background: $gray-400;
+  }
+}
+
+// ── Element Plus 主题微调（对齐设计系统）──
+:root {
+  --el-color-primary: #{$primary-500};
+  --el-color-success: #{$success-500};
+  --el-color-warning: #{$warning-500};
+  --el-color-danger: #{$danger-500};
+  --el-color-info: #{$info-500};
+  --el-border-radius-base: #{$radius-md};
+  --el-border-radius-small: #{$radius-sm};
+}
+
+.el-card {
+  border-radius: $radius-lg;
+  border: none;
+  box-shadow: $shadow-sm;
+}
+
+.el-table {
+  th.el-table__cell {
+    background-color: $gray-50;
+    font-weight: 600;
+    color: $gray-700;
+  }
+}
+
+// ── 通用工具类 ──
+.page-container {
+  padding: $spacing-lg;
+  min-height: 100%;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  margin-bottom: $spacing-md;
+  flex-wrap: wrap;
+}
+
+.toolbar-spacer {
+  flex: 1;
+}
+
+.text-mono {
+  font-family: $font-family-mono;
+}
+
+.text-secondary {
+  color: $gray-500;
+}
+
+.text-small {
+  font-size: 13px;
+}
+
+// 统计卡数字
+.stat-value {
+  font-family: $font-family-mono;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: $gray-500;
+}
+
+// 空状态
+.empty-block {
+  padding: $spacing-xl;
+  text-align: center;
+  color: $gray-400;
+}
+
+.empty-block-icon {
+  font-size: 48px;
+  opacity: 0.4;
+  margin-bottom: $spacing-md;
+}
