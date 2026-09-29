@@ -13,7 +13,10 @@ import type { Defect, Scenario, TestRecord, TestRecordDetail } from '@/types/api
 /**
  * 测试数据库：执行记录 + 缺陷记录双 Tab。
  *
- * 功能：多条件筛选、表格分页、记录详情抽屉（指标/缺陷）、缺陷状态流转。
+ * 功能：多条件筛选、表格分页、记录详情抽屉（操作流水/关联缺陷）、缺陷状态流转。
+ *
+ * 说明：原「关键指标」表已移除 —— 其数据（SOH / 充电电压上限等）属电池充放电语义，
+ *       本线体只驱动机械臂做自动化操作，无从获取。被测设备的测试项与上传数据将另行设计。
  */
 const authStore = useAuthStore()
 const canHandleDefect = authStore.roleLevel >= UserRoleLevel.TEST_ENGINEER
@@ -83,16 +86,6 @@ async function handleDefect(row: Defect): Promise<void> {
     await loadDefects()
   } catch {
     // 取消
-  }
-}
-
-/** 解析 JSON 字段（容错）。 */
-function parseJson<T>(text: string | undefined, fallback: T): T {
-  if (!text) return fallback
-  try {
-    return JSON.parse(text) as T
-  } catch {
-    return fallback
   }
 }
 
@@ -240,18 +233,6 @@ onMounted(async () => {
           <el-descriptions-item label="执行节点">{{ detail.record.nodeCode ?? '—' }}</el-descriptions-item>
           <el-descriptions-item label="开始时间" :span="2">{{ detail.record.testStartAt }}</el-descriptions-item>
         </el-descriptions>
-
-        <div class="section-title">关键指标</div>
-        <el-table :data="parseJson<Array<{ name: string; value: string; standard: string; passed: boolean }>>(detail.metricsJson, [])" size="small">
-          <el-table-column prop="name" label="指标" />
-          <el-table-column prop="value" label="实测值" />
-          <el-table-column prop="standard" label="标准" />
-          <el-table-column label="判定" width="70">
-            <template #default="{ row }">
-              <el-tag :type="row.passed ? 'success' : 'danger'" size="small">{{ row.passed ? '通过' : '失败' }}</el-tag>
-            </template>
-          </el-table-column>
-        </el-table>
 
         <template v-if="detail.defects.length > 0">
           <div class="section-title mt-4">关联缺陷</div>

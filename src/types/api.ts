@@ -171,8 +171,7 @@ export interface TestRecord {
 
 export interface TestRecordDetail {
   record: TestRecord
-  metricsJson?: string
-  samplesJson?: string
+  /** 操作流水（JSON 数组：时间戳 + 动作 + 结果） */
   operationFlowJson?: string
   reportPath?: string
   defects: Defect[]

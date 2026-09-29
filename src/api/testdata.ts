@@ -21,7 +21,7 @@ export const recordApi = {
     return http.page<TestRecord>('/records', query as Record<string, unknown>)
   },
 
-  /** 记录详情（含指标/曲线/缺陷）。 */
+  /** 记录详情（含操作流水/缺陷）。 */
   detail(id: number) {
     return http.get<TestRecordDetail>(`/records/${id}`)
   },
