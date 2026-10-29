@@ -46,6 +46,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '场景编辑', hidden: true, authLevel: UserRoleLevel.TEST_ENGINEER },
       },
       {
+        path: 'action',
+        name: 'ActionLibrary',
+        component: () => import('@/views/action/index.vue'),
+        meta: { title: '动作库', icon: 'Connection', group: '测试管理', authLevel: UserRoleLevel.GUEST },
+      },
+      {
         path: 'database',
         name: 'TestDatabase',
         component: () => import('@/views/database/index.vue'),

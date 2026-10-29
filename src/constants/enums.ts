@@ -123,12 +123,40 @@ export const NodeStatusTagType: Record<string, 'success' | 'warning' | 'danger' 
 
 /** 机械臂模式（与 CGXi SDK RobotModes 对齐）。 */
 export const RobotModeLabel: Record<number, string> = {
+  0: '已关闭',
+  1: '未连接',
+  2: '安全确认中',
+  3: '启动中',
+  4: '控制器空闲',
+  5: '固件升级中',
   6: '未上电',
+  7: '上电中',
   8: '已上电',
+  9: '自由拖动',
+  10: '松开抱闸',
   11: '已使能',
+  12: '关闭抱闸',
+  100: '点动中',
+  101: '示教中',
+  102: '力控测试',
   103: '就绪',
+  104: '程序暂停',
+  105: '停止中',
+  106: '暂停中',
+  107: '停止过渡中',
+  108: '减速中',
   109: '运动中',
+  110: '运动中(可混合)',
+  111: '立即停止',
+  112: '保护性停止',
 }
+
+/**
+ * 需要按告警展示的机械臂模式。
+ * 111=立即停止（ImdStop），112=保护性停止（ProtectiveStop，常见于碰撞检测触发）。
+ * 这些模式下错误码可能为 0，因此不能只靠 robotErrorCode 判断。
+ */
+export const RobotModeDangerSet: ReadonlySet<number> = new Set([111, 112])
 
 // ══════════════════════ 审计 ══════════════════════
 

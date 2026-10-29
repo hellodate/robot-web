@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
 import { nodeApi } from '@/api/library'
-import { NodeStatusLabel, NodeStatusTagType, RobotModeLabel } from '@/constants/enums'
+import { NodeStatusLabel, NodeStatusTagType, RobotModeDangerSet, RobotModeLabel } from '@/constants/enums'
 import type { PcNode } from '@/types/api'
 
 /** 控制端节点：PC 控制端注册状态、机械臂模式、心跳监控（30 秒轮询）。 */
@@ -21,6 +21,16 @@ async function load(): Promise<void> {
 function robotModeName(mode?: number): string {
   if (mode === undefined || mode === null) return '—'
   return RobotModeLabel[mode] ?? `未知(${mode})`
+}
+
+/**
+ * 机械臂是否处于需要告警的状态。
+ * 111/112（立即停止/保护性停止）时错误码可能为 0，所以必须单独按模式判断。
+ */
+function isRobotDanger(n: PcNode): boolean {
+  const modeDanger = n.robotMode !== undefined && n.robotMode !== null && RobotModeDangerSet.has(n.robotMode)
+  const codeDanger = !!n.robotErrorCode && n.robotErrorCode !== 0
+  return modeDanger || codeDanger
 }
 
 onMounted(() => {
@@ -63,7 +73,7 @@ onUnmounted(() => {
             <el-descriptions-item label="软件版本">{{ n.appVersion || '—' }}</el-descriptions-item>
             <el-descriptions-item label="场景缓存版本">{{ n.scenarioCacheVersion || '—' }}</el-descriptions-item>
             <el-descriptions-item label="机械臂模式">
-              <span :class="{ 'text-danger': n.robotErrorCode && n.robotErrorCode !== 0 }">
+              <span :class="{ 'text-danger': isRobotDanger(n) }">
                 {{ robotModeName(n.robotMode) }}
               </span>
             </el-descriptions-item>
@@ -73,11 +83,13 @@ onUnmounted(() => {
           </el-descriptions>
 
           <el-alert
-            v-if="n.robotErrorCode && n.robotErrorCode !== 0"
+            v-if="isRobotDanger(n)"
             type="error"
             :closable="false"
             class="mt-3"
-            :title="`机械臂错误码：${n.robotErrorCode}`"
+            :title="n.robotMode && RobotModeDangerSet.has(n.robotMode)
+              ? `机械臂${robotModeName(n.robotMode)}${n.robotErrorCode ? `（错误码 ${n.robotErrorCode}）` : ''}，需先复位`
+              : `机械臂错误码：${n.robotErrorCode}`"
           />
         </el-card>
       </el-col>
