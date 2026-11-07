@@ -82,8 +82,12 @@ const dispatchVersion = ref('')
 const dispatchNote = ref('')
 const dispatching = ref(false)
 
-/** 打开发放弹窗：加载节点、默认选在线节点；草稿会先发布再下发。 */
-async function openDispatch(scenario: Scenario): Promise<void> {
+/** true=远程运行（会动机械臂）；false=只下发同步场景库。 */
+const runMode = ref(false)
+
+/** 打开发放/运行弹窗：加载节点、默认选在线节点；草稿会先发布。 */
+async function openDispatch(scenario: Scenario, run = false): Promise<void> {
+  runMode.value = run
   dispatchTarget.value = scenario
   dispatchVersion.value = bumpVersion(scenario.version)
   dispatchNote.value = ''
@@ -114,8 +118,14 @@ async function confirmDispatch(): Promise<void> {
       await scenarioApi.publish(target.id, dispatchVersion.value, dispatchNote.value)
       ElMessage.success(`已发布 ${dispatchVersion.value}`)
     }
-    const res = await scenarioApi.dispatch(target.id, dispatchNodeCode.value)
-    ElMessage.success(`已下发到 ${res.nodeCode}，PC 端收到后会立即同步场景库`)
+
+    if (runMode.value) {
+      const res = await scenarioApi.run(target.id, dispatchNodeCode.value)
+      ElMessage.success(`运行指令已发送到 ${res.nodeCode}，PC 收到后将按场景动作序列驱动机械臂`)
+    } else {
+      const res = await scenarioApi.dispatch(target.id, dispatchNodeCode.value)
+      ElMessage.success(`已下发到 ${res.nodeCode}，PC 端收到后会立即同步场景库`)
+    }
     dispatchVisible.value = false
     await load()
   } catch {
@@ -219,6 +229,9 @@ onMounted(load)
                 <el-button v-if="canEdit" text type="warning" size="small" @click="openDispatch(s)">
                   {{ s.status === 'PUBLISHED' ? '下发' : '发布并下发' }}
                 </el-button>
+                <el-button v-if="canEdit" text type="danger" size="small" @click="openDispatch(s, true)">
+                  远程运行
+                </el-button>
                 <el-button v-if="canEdit && s.status === 'DRAFT'" text type="danger" size="small" @click="handleDelete(s)">
                   删除
                 </el-button>
@@ -242,7 +255,18 @@ onMounted(load)
     />
 
     <!-- 下发到 PC：草稿会先发布，再通过 WebSocket 通知 PC 立即同步 -->
-    <el-dialog v-model="dispatchVisible" title="下发场景到 PC" width="480">
+    <el-dialog
+      v-model="dispatchVisible"
+      :title="runMode ? '远程运行场景（会驱动机械臂）' : '下发场景到 PC'"
+      width="480"
+    >
+      <el-alert
+        v-if="runMode"
+        type="error"
+        :closable="false"
+        title="确认现场安全：PC 收到指令后会按场景动作序列实际驱动机械臂"
+        style="margin-bottom: 12px"
+      />
       <el-form label-width="90px">
         <el-form-item label="场景">
           <span>{{ dispatchTarget?.name }}</span>
@@ -285,7 +309,8 @@ onMounted(load)
       <template #footer>
         <el-button @click="dispatchVisible = false">取消</el-button>
         <el-button type="primary" :loading="dispatching" @click="confirmDispatch">
-          {{ dispatchTarget && dispatchTarget.status !== 'PUBLISHED' ? '发布并下发' : '下发' }}
+          <template v-if="runMode">确认运行</template>
+          <template v-else>{{ dispatchTarget && dispatchTarget.status !== 'PUBLISHED' ? '发布并下发' : '下发' }}</template>
         </el-button>
       </template>
     </el-dialog>

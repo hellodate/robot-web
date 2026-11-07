@@ -47,6 +47,14 @@ export const scenarioApi = {
     )
   },
 
+  /** 远程运行场景：PC 端按场景动作序列驱动机械臂（高风险，需二次确认）。 */
+  run(id: number, nodeCode: string) {
+    return http.post<{ scenarioCode: string; scenarioVersion: string; nodeCode: string; nodeStatus: string }>(
+      `/scenarios/${id}/run`,
+      { nodeCode },
+    )
+  },
+
   /** 版本历史。 */
   versions(id: number) {
     return http.get<ScenarioVersion[]>(`/scenarios/${id}/versions`)
