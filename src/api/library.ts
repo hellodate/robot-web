@@ -39,6 +39,14 @@ export const scenarioApi = {
     return http.post<Scenario>(`/scenarios/${id}/publish`, { version, changeNote })
   },
 
+  /** 下发场景到指定 PC 节点（WebSocket 通知 PC 立即同步场景库）。 */
+  dispatch(id: number, nodeCode: string) {
+    return http.post<{ scenarioCode: string; scenarioVersion: string; nodeCode: string; nodeStatus: string }>(
+      `/scenarios/${id}/dispatch`,
+      { nodeCode },
+    )
+  },
+
   /** 版本历史。 */
   versions(id: number) {
     return http.get<ScenarioVersion[]>(`/scenarios/${id}/versions`)
