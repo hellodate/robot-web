@@ -84,6 +84,8 @@ const dispatching = ref(false)
 
 /** true=远程运行（会动机械臂）；false=只下发同步场景库。 */
 const runMode = ref(false)
+const runDeviceSn = ref('')
+const runCycles = ref(1)
 
 /** 打开发放/运行弹窗：加载节点、默认选在线节点；草稿会先发布。 */
 async function openDispatch(scenario: Scenario, run = false): Promise<void> {
@@ -92,6 +94,8 @@ async function openDispatch(scenario: Scenario, run = false): Promise<void> {
   dispatchVersion.value = bumpVersion(scenario.version)
   dispatchNote.value = ''
   dispatchNodeCode.value = ''
+  runDeviceSn.value = ''
+  runCycles.value = 1
   dispatchNodes.value = []
   try {
     dispatchNodes.value = await nodeApi.list()
@@ -111,6 +115,10 @@ async function confirmDispatch(): Promise<void> {
     ElMessage.warning('请选择在线 PC 节点')
     return
   }
+  if (runMode.value && !runDeviceSn.value.trim()) {
+    ElMessage.warning('请填写被测设备 SN（测试记录必填）')
+    return
+  }
 
   dispatching.value = true
   try {
@@ -120,8 +128,15 @@ async function confirmDispatch(): Promise<void> {
     }
 
     if (runMode.value) {
-      const res = await scenarioApi.run(target.id, dispatchNodeCode.value)
-      ElMessage.success(`运行指令已发送到 ${res.nodeCode}，PC 收到后将按场景动作序列驱动机械臂`)
+      const res = await scenarioApi.run(
+        target.id,
+        dispatchNodeCode.value,
+        runDeviceSn.value.trim(),
+        runCycles.value,
+      )
+      ElMessage.success(
+        `运行指令已发送到 ${res.nodeCode}（设备 ${runDeviceSn.value.trim()}，${runCycles.value} 轮）`,
+      )
     } else {
       const res = await scenarioApi.dispatch(target.id, dispatchNodeCode.value)
       ElMessage.success(`已下发到 ${res.nodeCode}，PC 端收到后会立即同步场景库`)
@@ -264,7 +279,7 @@ onMounted(load)
         v-if="runMode"
         type="error"
         :closable="false"
-        title="确认现场安全：PC 收到指令后会按场景动作序列实际驱动机械臂"
+        title="确认现场安全：PC 收到指令后会按场景动作序列实际驱动机械臂（当前不含电气测试）"
         style="margin-bottom: 12px"
       />
       <el-form label-width="90px">
@@ -289,6 +304,15 @@ onMounted(load)
             暂无已注册节点：请先启动 PC 端并登录，节点心跳上线后再下发。
           </div>
         </el-form-item>
+
+        <template v-if="runMode">
+          <el-form-item label="设备 SN">
+            <el-input v-model="runDeviceSn" placeholder="被测设备条码 / SN（测试记录必填）" />
+          </el-form-item>
+          <el-form-item label="循环轮数">
+            <el-input v-model.number="runCycles" type="number" min="1" max="1000" />
+          </el-form-item>
+        </template>
 
         <template v-if="dispatchTarget && dispatchTarget.status !== 'PUBLISHED'">
           <el-alert
