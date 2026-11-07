@@ -114,7 +114,9 @@ function openDetail(row: RobotAction): void {
 
   let parsed: RobotStep[] = []
   try {
-    parsed = JSON.parse(row.stepsJson || '[]') as RobotStep[]
+    const raw = JSON.parse(row.stepsJson || '[]') as RobotStep[] | RobotStep | null
+    // 兼容单步对象（旧数据/手工写入）与正常数组，避免 items.map 报错
+    parsed = Array.isArray(raw) ? raw : raw ? [raw] : []
   } catch {
     parsed = []
   }
